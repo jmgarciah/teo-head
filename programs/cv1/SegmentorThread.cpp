@@ -211,6 +211,7 @@ void SegmentorThread::run() {
         fprintf(stderr,"[warning] SegmentorThread run(): blobsXY.size() < 1.\n");
         //return;
     }
+    double mmX_tmp, mmY_tmp, mmZ_tmp;
     for( int i = 0; i < blobsXY.size(); i++) {
         addCircle(outYarpImg,blue,blobsXY[i].x,blobsXY[i].y,3);
         if (blobsXY[i].x<0) {
@@ -224,7 +225,7 @@ void SegmentorThread::run() {
             blobsXY[i].y = 0;
         }
         // double mmZ_tmp = depth->pixel(int(blobsXY[i].x +cx_d-cx_rgb),int(blobsXY[i].y +cy_d-cy_rgb));
-        double mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
+        mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
 
         if (mmZ_tmp < 0.001) {
             fprintf(stderr,"[warning] SegmentorThread run(): mmZ_tmp[%d] < 0.001.\n",i);
@@ -233,8 +234,8 @@ void SegmentorThread::run() {
             return;
         }
 
-        double mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
-        double mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
+        mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
+        mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
 
 //        mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
 //        mmY.push_back( mmY_tmp );    // Points down.
