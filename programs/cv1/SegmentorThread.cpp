@@ -236,9 +236,9 @@ void SegmentorThread::run() {
         double mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
         double mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
 
-        mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
-        mmY.push_back( mmY_tmp );    // Points down.
-        mmZ.push_back( mmZ_tmp );    // oints forward.
+//        mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
+//        mmY.push_back( mmY_tmp );    // Points down.
+//        mmZ.push_back( mmZ_tmp );    // oints forward.
 
     }
 
@@ -254,7 +254,8 @@ void SegmentorThread::run() {
     for (int elem = 0; elem < outFeatures.size() ; elem++) {
         if ( outFeatures.get(elem).asString() == "mmX" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmX[0]);
+ //               output.addDouble(mmX[0]); version Juan
+                output.addDouble( - mmX_tmp );
             } else {
                 Bottle locXs;
                 for (int i = 0; i < blobsXY.size(); i++)
@@ -263,7 +264,8 @@ void SegmentorThread::run() {
             }
         } else if ( outFeatures.get(elem).asString() == "mmY" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmY[0]);
+//                output.addDouble(mmY[0]); version Juan
+                output.addDouble( mmY_tmp );
             } else {
                 Bottle locYs;
                 for (int i = 0; i < blobsXY.size(); i++)
@@ -272,7 +274,8 @@ void SegmentorThread::run() {
             }
         } else if ( outFeatures.get(elem).asString() == "mmZ" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmZ[0]);
+//                output.addDouble(mmZ[0]); version Juan
+                output.addDouble( mmZ_tmp );
             } else {
                 Bottle locZs;
                 for (int i = 0; i < blobsXY.size(); i++)
