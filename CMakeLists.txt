@@ -18,7 +18,6 @@ option(ENABLE_HeadYarp "Choose if you want to compile HeadYarp" TRUE)
 
 ### options: cpp modules
 option(ENABLE_cv1 "Choose if you want to compile cv1" TRUE)
-option(ENABLE_cvBottle "Choose if you want to compile cvBottle" TRUE)
 option(ENABLE_cvFaces "Choose if you want to compile cvFaces" TRUE)
 option(ENABLE_cv1ToRoot "Choose if you want to compile cv1ToRoot" TRUE)
 option(ENABLE_multipleDump "Choose if you want to compile multipleDump" TRUE)

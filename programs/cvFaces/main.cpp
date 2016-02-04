@@ -10,6 +10,7 @@
  */
 
 #include "CvFaces.hpp"
+#include <NiTE.h>
 
 int main(int argc, char** argv) {
 

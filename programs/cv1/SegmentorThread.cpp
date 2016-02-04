@@ -255,7 +255,7 @@ void SegmentorThread::run() {
         if ( outFeatures.get(elem).asString() == "mmX" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
  //               output.addDouble(mmX[0]); version Juan
-                output.addDouble( - mmX_tmp );
+                output.addDouble( mmX_tmp );
             } else {
                 Bottle locXs;
                 for (int i = 0; i < blobsXY.size(); i++)
