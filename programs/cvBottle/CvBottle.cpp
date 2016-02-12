@@ -47,7 +47,7 @@ bool CvBottle::configure(ResourceFinder &rf) {
             Time::delay(1);
         }
         printf("[CvBottle] success: kinectDevice available.\n");
-        if (! dd.view(kinect) ) fprintf(stderr,"[Cv1] warning: kinectDevice bad view.\n");
+        if (! dd.view(kinect) ) fprintf(stderr,"[CvBottle] warning: kinectDevice bad view.\n");
         else printf("[CvBottle] success: kinectDevice ok view.\n");
 
         segmentorThread.setIKinectDeviceDriver(kinect);
