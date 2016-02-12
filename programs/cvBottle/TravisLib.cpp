@@ -288,9 +288,9 @@ bool Travis::getBlobsAngle(const int& method, vector <double>& angles) {
         Point2f p_0_1 = vertices[1] - vertices[0];
         Point2f p_0_3 = vertices[3] - vertices[0];
         if ( cv::norm(p_0_1) >  cv::norm(p_0_3) )
-            angles.push_back( - atan2( p_0_3.y , p_0_3.x )*180.0/M_PI );
+            angles.push_back(( - atan2( p_0_3.y , p_0_3.x )*180.0/M_PI) + 90 );
         else
-            angles.push_back( - atan2( p_0_1.y , p_0_1.x )*180.0/M_PI );
+            angles.push_back(( - atan2( p_0_1.y , p_0_1.x )*180.0/M_PI) - 90 );
 
     }
     return true;
@@ -379,7 +379,7 @@ bool Travis::getBlobsHSV(vector <double>& hues, vector <double>& vals, vector <d
 cv::Mat& Travis::getCvMat(const int& image, const int& vizualization) {
     if (!_quiet) printf("[Travis] in: getCvMat(%d,%d)\n",image,vizualization);
 
-    if (( vizualization == 1 )||( vizualization == 3 )) {  // Contour
+    if (( vizualization == 2 )||( vizualization == 3 )) {  // Contour
         RNG rng(12345);
         for( int i = 0; i < _contours.size(); i++ ) {
             Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
@@ -390,7 +390,7 @@ cv::Mat& Travis::getCvMat(const int& image, const int& vizualization) {
         }
     }
 
-    if (( vizualization == 2 )||( vizualization == 3 )) {  // Box, computed in getBlobsAngle
+    if (( vizualization == 1 )||( vizualization == 3 )) {  // Box, computed in getBlobsAngle
         for(int i=0;i<_minRotatedRects.size();i++) {
             cv::Point2f vertices[4];
             _minRotatedRects[i].points(vertices);
