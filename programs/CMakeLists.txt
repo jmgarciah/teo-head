@@ -2,6 +2,7 @@
 # Authors: Juan G. Victores
 
 add_subdirectory(cv1)
+add_subdirectory(cvBottle)
 add_subdirectory(cvFaces)
 add_subdirectory(cv1ToRoot)
 add_subdirectory(multipleDump)

@@ -89,14 +89,10 @@ default: \"(%s)\")\n",outFeatures.toString().c_str());
     if (rf.check("morphOpening")) morphOpening = rf.find("morphOpening").asDouble();
     if (rf.check("outFeaturesFormat")) outFeaturesFormat = rf.find("outFeaturesFormat").asInt();
 
-    printf("SegmentorThread using fx_d: %f, fy_d: %f, cx_d: %f, cy_d: %f.\n",
-        fx_d,fy_d,cx_d,cy_d);
-    printf("SegmentorThread using fx_rgb: %f, fy_rgb: %f, cx_rgb: %f, cy_rgb: %f.\n",
-        fx_rgb,fy_rgb,cx_rgb,cy_rgb);
-    printf("SegmentorThread using algorithm: %s, locate: %s.\n",
-        algorithm.c_str(),locate.c_str());
-    printf("SegmentorThread using maxNumBlobs: %d, morphClosing: %.2f, outFeaturesFormat: %d.\n",
-        maxNumBlobs,morphClosing,outFeaturesFormat);
+    printf("SegmentorThread using fx_d: %f, fy_d: %f, cx_d: %f, cy_d: %f.\n", fx_d,fy_d,cx_d,cy_d);
+    printf("SegmentorThread using fx_rgb: %f, fy_rgb: %f, cx_rgb: %f, cy_rgb: %f.\n", fx_rgb,fy_rgb,cx_rgb,cy_rgb);
+    printf("SegmentorThread using algorithm: %s, locate: %s.\n", algorithm.c_str(),locate.c_str());
+    printf("SegmentorThread using maxNumBlobs: %d, morphClosing: %.2f, outFeaturesFormat: %d.\n", maxNumBlobs,morphClosing,outFeaturesFormat);
 
     if (rf.check("outFeatures")) {
         outFeatures = *(rf.find("outFeatures").asList());  // simple overrride
@@ -140,20 +136,20 @@ void SegmentorThread::run() {
         return;
     };*/
 
-    ImageOf<PixelRgb> inYarpImg = kinect->getImageFrame();
+    ImageOf<PixelRgb> inYarpImg = kinect->getImageFrame(); //test of the image sensor
     if (inYarpImg.height()<10) {
-        //printf("No img yet...\n");
+        printf("No img yet...\n");
         return;
     };
-    ImageOf<PixelMono16> depth = kinect->getDepthFrame();
+    ImageOf<PixelMono16> depth = kinect->getDepthFrame(); //test of the depth sensor
     if (depth.height()<10) {
-        //printf("No depth yet...\n");
+        printf("No depth yet...\n");
         return;
     };
 
     // {yarp ImageOf Rgb -> openCv Mat Bgr}
-    IplImage *inIplImage = cvCreateImage(cvSize(inYarpImg.width(), inYarpImg.height()),
-                                         IPL_DEPTH_8U, 3 );
+    IplImage *inIplImage = cvCreateImage(cvSize(inYarpImg.width(), inYarpImg.height()), IPL_DEPTH_8U, 3 );
+
     cvCvtColor((IplImage*)inYarpImg.getIplImage(), inIplImage, CV_RGB2BGR);
     Mat inCvMat(inIplImage);
 
@@ -198,6 +194,7 @@ void SegmentorThread::run() {
     travis.getBlobsRectangularity(blobsRectangularity);  // must be called after getBlobsAngle!!!!
     Mat outCvMat = travis.getCvMat(outImage,seeBounding);
     travis.release();
+
     // { openCv Mat Bgr -> yarp ImageOf Rgb}
     IplImage outIplImage = outCvMat;
     cvCvtColor(&outIplImage,&outIplImage, CV_BGR2RGB);
@@ -208,6 +205,7 @@ void SegmentorThread::run() {
     PixelRgb blue(0,0,255);
     vector<double> mmX, mmY, mmZ;
     double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp;
+
     if(blobsXY.size() < 1) {
         fprintf(stderr,"[warning] SegmentorThread run(): blobsXY.size() < 1.\n");
         //return;
