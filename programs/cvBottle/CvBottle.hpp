@@ -8,7 +8,7 @@
 
 #define DEFAULT_CROP_SELECTOR 0  // 1=true
 #define DEFAULT_KINECT_DEVICE "OpenNI2DeviceServer"
-#define DEFAULT_KINECT_LOCAL "/cv1"
+#define DEFAULT_KINECT_LOCAL "/cvBottle"
 #define DEFAULT_KINECT_REMOTE "/OpenNI2"
 #define DEFAULT_WATCHDOG    2       // [s]
 

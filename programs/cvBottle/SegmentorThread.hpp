@@ -57,9 +57,9 @@ namespace teo
 {
 
 /**
- * @ingroup cv1
+ * @ingroup cvBottle
  *
- * @brief Implements cv1 callback on Bottle.
+ * @brief Implements cvBottle callback on Bottle.
  */
 class DataProcessor : public PortReader {
     virtual bool read(ConnectionReader& connection) {
@@ -104,9 +104,9 @@ public:
 };
 
 /**
- * @ingroup cv1
+ * @ingroup cvBottle
  *
- * @brief Implements cv1 RateThread.
+ * @brief Implements cvBottle RateThread.
  */
 class SegmentorThread : public RateThread {
 private:
