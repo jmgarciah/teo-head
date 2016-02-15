@@ -96,7 +96,7 @@ default: \"(%s)\")\n",outFeatures.toString().c_str());
 
     if (rf.check("outFeatures")) {
         outFeatures = *(rf.find("outFeatures").asList());  // simple overrride
-    }   
+    }
     printf("SegmentorThread using outFeatures: (%s).\n", outFeatures.toString().c_str());
 
     if (rf.check("outImage")) outImage = rf.find("outImage").asInt();
@@ -224,9 +224,9 @@ void SegmentorThread::run() {
             blobsXY[i].y = 0;
         }
         // double mmZ_tmp = depth->pixel(int(blobsXY[i].x +cx_d-cx_rgb),int(blobsXY[i].y +cy_d-cy_rgb));
-        
-           
-        mmZ_tmp_2 = mmZ_tmp;        
+
+
+        mmZ_tmp_2 = mmZ_tmp;
         mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
 
         if (mmZ_tmp < 0.001) {
