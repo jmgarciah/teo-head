@@ -164,6 +164,9 @@ protected:
     /** Store the image in cv::Mat format. */
     cv::Mat _img;
 
+    /** Store the image RGB in cv::Mat format. */
+    cv::Mat colour;
+
     /** Store the hsv image in cv::Mat format. */
     cv::Mat _imgHsv;
 
@@ -228,6 +231,7 @@ void calcRectangularity(float& rectangularity, const vector <Point> biggestCont)
  * @ingroup travis_functions
  * This function calculates the angle.
  */
+
 void calcAngle(float& angle, const vector <Point> biggestCont);
 
 /**

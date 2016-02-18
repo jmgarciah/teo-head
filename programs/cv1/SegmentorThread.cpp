@@ -178,8 +178,8 @@ void SegmentorThread::run() {
     else travis.binarize(algorithm.c_str(), threshold);
     travis.morphOpening( inYarpImg.width() * morphOpening / 100.0 );  // percent
     travis.morphClosing( inYarpImg.width() * morphClosing / 100.0 );  // percent
-    //travis.morphOpening( morphOpening );
-    //travis.morphClosing( morphClosing );
+    travis.morphOpening( morphOpening );
+    travis.morphClosing( morphClosing );
     travis.blobize(maxNumBlobs);
     vector<cv::Point> blobsXY;
     travis.getBlobsXY(blobsXY);
@@ -205,14 +205,16 @@ void SegmentorThread::run() {
     strcpy (outIplImage.channelSeq,sequence);
     ImageOf<PixelRgb> outYarpImg;
     outYarpImg.wrapIplImage(&outIplImage);
-    PixelRgb blue(0,0,255);
+    PixelRgb blue(0,255,255);
     vector<double> mmX, mmY, mmZ;
+    double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp;
+
     if(blobsXY.size() < 1) {
         fprintf(stderr,"[warning] SegmentorThread run(): blobsXY.size() < 1.\n");
         //return;
     }
     for( int i = 0; i < blobsXY.size(); i++) {
-        addCircle(outYarpImg,blue,blobsXY[i].x,blobsXY[i].y,3);
+        addCircle(outYarpImg,blue,blobsXY[i].x,blobsXY[i].y,2);
         if (blobsXY[i].x<0) {
             fprintf(stderr,"[warning] SegmentorThread run(): blobsXY[%d].x < 0.\n",i);
             //return;
@@ -224,21 +226,26 @@ void SegmentorThread::run() {
             blobsXY[i].y = 0;
         }
         // double mmZ_tmp = depth->pixel(int(blobsXY[i].x +cx_d-cx_rgb),int(blobsXY[i].y +cy_d-cy_rgb));
-        double mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
+        mmZ_tmp_2 = mmZ_tmp;
+        mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
 
         if (mmZ_tmp < 0.001) {
+           mmZ_tmp = mmZ_tmp_2;
+
+            /*
             fprintf(stderr,"[warning] SegmentorThread run(): mmZ_tmp[%d] < 0.001.\n",i);
             cvReleaseImage( &inIplImage );  // release the memory for the image
             outCvMat.release();
             return;
+            */
         }
 
-        double mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
-        double mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
+        mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
+        mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
 
-        mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
-        mmY.push_back( mmY_tmp );    // Points down.
-        mmZ.push_back( mmZ_tmp );    // oints forward.
+        //mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
+        //mmY.push_back( mmY_tmp );    // Points down.
+        //mmZ.push_back( mmZ_tmp );    // oints forward.
 
     }
 
@@ -254,7 +261,7 @@ void SegmentorThread::run() {
     for (int elem = 0; elem < outFeatures.size() ; elem++) {
         if ( outFeatures.get(elem).asString() == "mmX" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmX[0]);
+                output.addDouble(mmX_tmp);
             } else {
                 Bottle locXs;
                 for (int i = 0; i < blobsXY.size(); i++)
@@ -263,7 +270,7 @@ void SegmentorThread::run() {
             }
         } else if ( outFeatures.get(elem).asString() == "mmY" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmY[0]);
+                output.addDouble(mmY_tmp);
             } else {
                 Bottle locYs;
                 for (int i = 0; i < blobsXY.size(); i++)
@@ -272,7 +279,7 @@ void SegmentorThread::run() {
             }
         } else if ( outFeatures.get(elem).asString() == "mmZ" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-                output.addDouble(mmZ[0]);
+                output.addDouble(mmZ_tmp);
             } else {
                 Bottle locZs;
                 for (int i = 0; i < blobsXY.size(); i++)

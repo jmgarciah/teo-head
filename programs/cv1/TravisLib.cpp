@@ -17,6 +17,7 @@ bool Travis::setCvMat(const cv::Mat& image) {
     else _img = image;  // faster and less memory
 
     cvtColor(_img, _imgHsv, CV_BGR2HSV);
+    cvtColor(_img, colour, CV_BGR2RGB);
 
     return true;
 }
@@ -104,6 +105,17 @@ bool Travis::binarize(const char* algorithm, const double& threshold) {
         cv::split(_img, bgrChannels);
         cv::subtract(bgrChannels[0], bgrChannels[1], _imgBin);  // BGR
         cv::threshold(_imgBin, _imgBin, threshold, 255, THRESH_BINARY);
+    } else if (strcmp(algorithm,"redDetection")==0) {
+        if (!_quiet) printf("[Travis] in: binarize(%s, %f)\n",algorithm,threshold);
+        cv::Mat r_channel(colour.size(), CV_8UC1);
+        cv::Mat g_channel(colour.size(), CV_8UC1);
+        cv::Mat b_channel(colour.size(), CV_8UC1);
+        cv::Mat array_channels[] = {r_channel,g_channel,b_channel};
+        cv::split(colour, array_channels);
+        cv::subtract(array_channels[0], array_channels[2], _imgBin);  // BGR
+        cv::threshold(_imgBin, _imgBin, threshold, 255, THRESH_BINARY);
+        cv::erode(_imgBin, _imgBin, getStructuringElement(MORPH_ELLIPSE,Size(6,6)));
+        cv::dilate(_imgBin, _imgBin, getStructuringElement(MORPH_ELLIPSE,Size(6,6)));
     } else {
         fprintf(stderr,"[Travis] error: Unrecognized algorithm with 1 arg: %s.\n",algorithm);
         return false;
@@ -288,9 +300,9 @@ bool Travis::getBlobsAngle(const int& method, vector <double>& angles) {
         Point2f p_0_1 = vertices[1] - vertices[0];
         Point2f p_0_3 = vertices[3] - vertices[0];
         if ( cv::norm(p_0_1) >  cv::norm(p_0_3) )
-            angles.push_back( - atan2( p_0_3.y , p_0_3.x )*180.0/M_PI );
+            angles.push_back( (- atan2( p_0_3.y , p_0_3.x )*180.0/M_PI)+90 );
         else
-            angles.push_back( - atan2( p_0_1.y , p_0_1.x )*180.0/M_PI );
+            angles.push_back( (- atan2( p_0_1.y , p_0_1.x )*180.0/M_PI)-90 );
 
     }
     return true;
@@ -530,10 +542,13 @@ void calcAngle(float& angle, const vector <Point> biggestCont){
     minRect.points(vertices);
     Point2f p_0_1 = vertices[1] - vertices[0];
     Point2f p_0_3 = vertices[3] - vertices[0];
+
     if ( cv::norm(p_0_1) >  cv::norm(p_0_3) )
         angle = - atan2( p_0_3.y , p_0_3.x )*180.0/M_PI ;
     else
         angle = - atan2( p_0_1.y , p_0_1.x )*180.0/M_PI ;
+
+
 
 }
 
