@@ -185,10 +185,10 @@ void SegmentorThread::run() {
     travis.getBlobsXY(blobsXY);
     vector<double> blobsAngle,blobsArea,blobsAspectRatio,blobsAxisFirst,blobsAxisSecond;
     vector<double> blobsRectangularity,blobsSolidity;
-    vector<double> blobsHue,blobsSat,blobsVal,blobsHueStdDev,blobsSatStdDev,blobsValStdDev;
+    //vector<double> blobsHue,blobsSat,blobsVal,blobsHueStdDev,blobsSatStdDev,blobsValStdDev;
     travis.getBlobsArea(blobsArea);
     travis.getBlobsSolidity(blobsSolidity);
-    travis.getBlobsHSV(blobsHue,blobsSat,blobsVal,blobsHueStdDev,blobsSatStdDev,blobsValStdDev);
+    //travis.getBlobsHSV(blobsHue,blobsSat,blobsVal,blobsHueStdDev,blobsSatStdDev,blobsValStdDev);
     bool ok = travis.getBlobsAngle(0,blobsAngle);  // method: 0=box, 1=ellipse; note check for return as 1 can break
     if (!ok) {
         fprintf(stderr,"[warning] SegmentorThread: getBlobsAngle failed.\n");
@@ -206,8 +206,9 @@ void SegmentorThread::run() {
     ImageOf<PixelRgb> outYarpImg;
     outYarpImg.wrapIplImage(&outIplImage);
     PixelRgb blue(0,255,255);
+   // PixelRgb Orange(255, 180, 0);
     vector<double> mmX, mmY, mmZ;
-    double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp;
+    double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp, mmXReal;
 
     if(blobsXY.size() < 1) {
         fprintf(stderr,"[warning] SegmentorThread run(): blobsXY.size() < 1.\n");
@@ -242,6 +243,23 @@ void SegmentorThread::run() {
 
         mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
         mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
+
+
+       mmXReal = blobsXY[i].y - ((blobsAxisFirst[0]*0.5)*(1-(25/50))*sin(blobsAngle[0]));
+
+        for( int i = 0; i < blobsXY.size(); i++) {
+            addCircle(outYarpImg,Orange,blobsXY[i].x ,blobsXY[i].y + ((blobsAxisFirst[i]/2)*(1-(25/50))*sin(blobsAngle[i])),2);
+            if (blobsXY[i].x<0) {
+                fprintf(stderr,"[warning] SegmentorThread run(): blobsXY[%d].x < 0.\n",i);
+                //return;
+                blobsXY[i].x= 0;
+            }
+            if (mmXReal<0) {
+                fprintf(stderr,"[warning] SegmentorThread run(): blobsXY[%d].y < 0.\n",i);
+                //return;
+                mmXReal= 0;
+            }
+        }
 
         //mmX.push_back( - mmX_tmp );  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
         //mmY.push_back( mmY_tmp );    // Points down.
@@ -286,7 +304,7 @@ void SegmentorThread::run() {
                     locZs.addDouble(mmZ[i]);
                 output.addList() = locZs;
             }
-        } else if ( outFeatures.get(elem).asString() == "pxXpos" ) {
+        }  else if ( outFeatures.get(elem).asString() == "pxXpos" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
                 output.addDouble(blobsXY[0].x);
             } else {
@@ -385,7 +403,7 @@ void SegmentorThread::run() {
                     solidities.addDouble(blobsSolidity[i]);
                 output.addList() = solidities;
             }
-        } else if ( outFeatures.get(elem).asString() == "hue" ) {
+        } /* else if ( outFeatures.get(elem).asString() == "hue" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
                 output.addDouble(blobsHue[0]);
             } else {
@@ -439,7 +457,7 @@ void SegmentorThread::run() {
                     valStdDevs.addDouble(blobsValStdDev[i]);
                 output.addList() = valStdDevs;
             }
-        } else if ( outFeatures.get(elem).asString() == "time" ) {
+        } */ else if ( outFeatures.get(elem).asString() == "time" ) {
             if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
                 output.addDouble(Time::now());
             } else {

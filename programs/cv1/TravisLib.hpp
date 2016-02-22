@@ -242,6 +242,12 @@ void calcMassCenter(float& massCenterLocX, float& massCenterLocY , const vector 
 
 /**
  * @ingroup travis_functions
+ * This function calculates the REAL mass center in function of the weight of the object.
+ */
+//void calcRealMassCenter(float& massCenterLocXR, float& massCenterLocYR, vector <double>& axisFirsts, const vector <Point> biggestCont);
+
+/**
+ * @ingroup travis_functions
  * This function calculates the aspect ratio.
  */
 void calcAspectRatio(float& aspectRatio, float& axisFirst, float& axisSecond ,const vector <Point> biggestCont);
