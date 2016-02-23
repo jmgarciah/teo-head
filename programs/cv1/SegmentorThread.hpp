@@ -39,11 +39,11 @@
 #define DEFAULT_MAX_NUM_BLOBS 1
 #define DEFAULT_MORPH_CLOSING 2
 #define DEFAULT_MORPH_OPENING 0
-#define DEFAULT_OUT_FEATURES "mmX mmY mmZ angle time"  // it's a bottle!!
+#define DEFAULT_OUT_FEATURES "mmX mmY mmZ angle axisFirst axisSecond"  // it's a bottle!!
 #define DEFAULT_OUT_FEATURES_FORMAT 1  // 0=bottled,1=minimal
 #define DEFAULT_OUT_IMAGE 0
 #define DEFAULT_RATE_MS 20
-#define DEFAULT_SEE_BOUNDING 1
+#define DEFAULT_SEE_BOUNDING 2
 #define DEFAULT_THRESHOLD 55
 
 using namespace yarp::os;
