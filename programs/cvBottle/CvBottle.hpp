@@ -4,7 +4,6 @@
 #define __CVBOTTLE_HPP__
 
 #include "SegmentorThread.hpp"
-#include <NiTE.h>
 
 #define DEFAULT_CROP_SELECTOR 0  // 1=true
 #define DEFAULT_KINECT_DEVICE "OpenNI2DeviceServer"

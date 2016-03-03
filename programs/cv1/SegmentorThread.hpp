@@ -15,7 +15,7 @@
 
 #include <yarp/sig/all.h>
 
-#include <NiTE.h>
+
 
 #include "cv.h"
 //#include "highgui.h" // to show windows
