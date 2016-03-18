@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include "SegmentorThread.hpp"
+#include <fstream>
 
 namespace teo
 {
@@ -63,7 +64,7 @@ void SegmentorThread::init(ResourceFinder &rf) {
         printf("\t--maxNumBlobs (default: \"%d\")\n",maxNumBlobs);
         printf("\t--morphClosing (percentage, 2 or 4 okay; default: \"%f\")\n",morphClosing);
         printf("\t--morphOpening (percentage, 2 or 4 okay; default: \"%f\")\n",morphOpening);
-        printf("\t--outFeatures (mmX,mmY,mmZ,difX,difY,difZ,velX,velY,velZ,pxXpos,pxYpos,pxX,pxY,angle,area,aspectRatio,rectangularity,axisFirst,axisSecond \
+        printf("\t--outFeatures (mmX,mmY,mmZ,difX,difY,difZ,velX,velY,velZ,acelX,acelY,acelZ,pxXpos,pxYpos,pxX,pxY,angle,area,aspectRatio,rectangularity,axisFirst,axisSecond \
 solidity,hue,sat,val,hueStdDev,satStdDev,valStdDev,time; \
 default: \"(%s)\")\n",outFeatures.toString().c_str());
         printf("\t--outFeaturesFormat (0=bottled,1=minimal; default: \"%d\")\n",outFeaturesFormat);
@@ -124,6 +125,8 @@ default: \"(%s)\")\n",outFeatures.toString().c_str());
     this->start();
 
 }
+
+int iteration=1;
 
 /************************************************************************/
 void SegmentorThread::run() {
@@ -207,8 +210,8 @@ void SegmentorThread::run() {
     outYarpImg.wrapIplImage(&outIplImage);
     PixelRgb blue(0,255,255);
     // PixelRgb Orange(255,180,0);
-    vector<double> mmX, mmY, mmZ, difXV, difYV, difZV, velXV, velYV, velZV;
-    double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp, mmX_ant, mmY_ant, mmZ_ant, difX, difY, difZ, velX, velY, velZ, timepast, timeact, tiempo;
+    vector<double> mmX, mmY, mmZ, difXV, difYV, difZV, velXV, velYV, velZV, acelXX, acelYY, acelZZ;
+    double mmZ_tmp, mmZ_tmp_2, mmX_tmp, mmY_tmp, mmX_ant, mmY_ant, mmZ_ant, difX, difY, difZ, velX, velY, velZ, timepast, timeact, tiempo, velX_ant, velY_ant, velZ_ant, difVX, difVY, difVZ, acelX, acelY, acelZ;
 
     if(blobsXY.size() < 1) {
         fprintf(stderr,"[warning] SegmentorThread run(): blobsXY.size() < 1.\n");
@@ -242,8 +245,8 @@ void SegmentorThread::run() {
 		}
 		v=0;
 	}
-	//SEGUNDA OBTENCION DE POSICION X,Y,Z.
-    else{
+    //SEGUNDA OBTENCION DE POSICION X,Y,Z.PRIMERA OBTENCION DE VELOCIDAD X,Y,Z.
+    else if (v==0){
         timepast=Time::now();
 		mmX_ant=mmX_tmp;
 		mmY_ant=mmY_tmp;
@@ -284,9 +287,118 @@ void SegmentorThread::run() {
         tiempo=timeact-timepast;
 
         //VELOCIDADES EN LOS 3 EJES
-        velX=(difX/1000000)/tiempo;
-        velY=(difY/1000000)/tiempo;
-        velZ=(difZ/1000000)/tiempo;
+        if(difX<=1 &&difX>=(-1)){
+            velX=0;
+        }
+        else{
+            velX=(difX/1000000)/tiempo;
+        }
+        if(difY<=2 &&difY>=(-2)){
+            velY=0;
+        }
+        else{
+            velY=(difY/1000000)/tiempo;
+        }
+        if(difZ<=2 &&difZ>=(-2)){
+            velZ=0;
+        }
+        else{
+            velZ=(difZ/1000000)/tiempo;
+        }
+        v=2;
+    }
+
+    //PRIMERA OBTENCION DE ACELERACION X,Y,Z.
+    else if (v==2){
+        timepast=Time::now();
+        mmX_ant=mmX_tmp;
+        mmY_ant=mmY_tmp;
+        mmZ_ant=mmZ_tmp;
+
+        velX_ant=velX;
+        velY_ant=velY;
+        velZ_ant=velZ;
+
+        for( int i = 0; i < blobsXY.size(); i++) {
+            addCircle(outYarpImg,blue,blobsXY[i].x,blobsXY[i].y,2);
+            if (blobsXY[i].x<0) {
+                fprintf(stderr,"[warning] SegmentorThread run(): blobsXY[%d].x < 0.\n",i);
+                //return;
+                blobsXY[i].x = 0;
+            }
+            if (blobsXY[i].y<0) {
+                fprintf(stderr,"[warning] SegmentorThread run(): blobsXY[%d].y < 0.\n",i);
+                //return;
+                blobsXY[i].y = 0;
+            }
+            // double mmZ_tmp = depth->pixel(int(blobsXY[i].x +cx_d-cx_rgb),int(blobsXY[i].y +cy_d-cy_rgb));
+            mmZ_tmp_2 = mmZ_tmp;
+            mmZ_tmp = depth.pixel(int(blobsXY[i].x),int(blobsXY[i].y));
+
+            if (mmZ_tmp < 0.001) {
+               mmZ_tmp = mmZ_tmp_2;
+            }
+
+            mmX_tmp = 1000.0 * ( (blobsXY[i].x - cx_d) * mmZ_tmp/1000.0 ) / fx_d;
+            mmY_tmp = 1000.0 * ( (blobsXY[i].y - cy_d) * mmZ_tmp/1000.0 ) / fy_d;
+        }
+
+        //DIFERENCIA DE POSICIONES
+        difX=mmX_tmp-mmX_ant;
+        difY=mmY_tmp-mmY_ant;
+        difZ=mmZ_tmp-mmZ_ant;
+
+
+        timeact=Time::now();
+
+        //DIFERENCIA DE TIEMPOS
+        tiempo=timeact-timepast;
+
+        //VELOCIDADES EN LOS 3 EJES
+        if(difX<=1 &&difX>=(-1)){
+            velX=0;
+        }
+        else{
+            velX=(difX/1000000)/tiempo;
+        }
+        if(difY<=2 &&difY>=(-2)){
+            velY=0;
+        }
+        else{
+            velY=(difY/1000000)/tiempo;
+        }
+        if(difZ<=2 &&difZ>=(-2)){
+            velZ=0;
+        }
+        else{
+            velZ=(difZ/1000000)/tiempo;
+        }
+
+        //DIFERENCIA DE VELOCIDADES
+        difVX=velX-velX_ant;
+        difVY=velY-velY_ant;
+        difVZ=velZ-velZ_ant;
+
+        //ACELERACIONES EN LOS 3 EJES
+        acelX=(difVX/1000)/tiempo;
+        acelY=(difVY/1000)/tiempo;
+        acelZ=(difVZ/1000)/tiempo;
+
+
+     /*   //CORRECCION ERROR ANGULO
+        float Xpos;
+        float Yangle;
+        Xpos=blobsXY[0].x;
+        Yangle= (-0.0786) * Xpos+100.32; */
+
+
+            ofstream out;
+            if (iteration==1) {out.open("data.txt",ios::trunc);}
+            else {out.open("data.txt",ios::app);}
+            out <<blobsXY[0].x << " " << blobsXY[0].y << " " << blobsAngle[0] << endl;
+            out.close();
+
+
 
 		pOutImg->prepare() = outYarpImg;
 		pOutImg->write();
@@ -379,6 +491,33 @@ void SegmentorThread::run() {
                         velZ.addDouble(velZV[i]);
                     output.addList() = velZ;
                 }
+            }  else if ( outFeatures.get(elem).asString() == "acelX" ) {
+                if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
+                    output.addDouble(acelX);
+                } else {
+                    Bottle acelX;
+                    for (int i = 0; i < blobsXY.size(); i++)
+                        acelX.addDouble(acelXX[i]);
+                    output.addList() = acelX;
+                }
+            }  else if ( outFeatures.get(elem).asString() == "acelY" ) {
+                if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
+                    output.addDouble(acelY);
+                } else {
+                    Bottle acelY;
+                    for (int i = 0; i < blobsXY.size(); i++)
+                        acelY.addDouble(acelYY[i]);
+                    output.addList() = acelY;
+                }
+            }  else if ( outFeatures.get(elem).asString() == "acelZ" ) {
+                if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
+                    output.addDouble(acelZ);
+                } else {
+                    Bottle acelZ;
+                    for (int i = 0; i < blobsXY.size(); i++)
+                        acelZ.addDouble(acelZZ[i]);
+                    output.addList() = acelZ;
+                }
             }  else if ( outFeatures.get(elem).asString() == "pxXpos" ) {
 				if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
 					output.addDouble(blobsXY[0].x);
@@ -417,7 +556,7 @@ void SegmentorThread::run() {
 				}
 			} else if ( outFeatures.get(elem).asString() == "angle" ) {
 				if ( outFeaturesFormat == 1 ) {  // 0: Bottled, 1: Minimal
-					output.addDouble(blobsAngle[0]);
+                    output.addDouble(blobsAngle[0]);
 				} else {
 					Bottle angles;
 					for (int i = 0; i < blobsAngle.size(); i++)
@@ -549,7 +688,8 @@ void SegmentorThread::run() {
 		}
 		pOutPort->write(output);
 	}
-
+iteration++;
 }
+
 
 }  // namespace teo
